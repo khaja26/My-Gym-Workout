@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Management</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+
+    header {
+      text-align: center;
+      background-color: #4CAF50;
+      color: white;
+      padding: 1em 0;
+    }
+
+    main {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .popup {
+      display: block;
+      padding: 20px;
+      background-color: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin: 20px auto;
+      max-width: 400px;
+      border-radius: 5px;
+    }
+
+    .form-buttons {
+      text-align: center;
+    }
+
+    .form-buttons button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .form-buttons button:hover {
+      background-color: #45a049;
+    }
+
+    #messageDisplay {
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      color: green;
+    }
+
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 80%;
+      text-align: left;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    tr.selected {
+      background-color: #ffdddd;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Subscription Management</h1>
+  </header>
+
+  <main>
+    <div id="subscriptionPopup" class="popup">
+      <h2>Set Subscription</h2>
+      <form id="subscriptionForm">
+        <label for="subName">Subscription Name:</label>
+        <input type="text" id="subName" placeholder="Enter Subscription Name" required><br><br>
+
+        <label for="subDate">Date:</label>
+        <input type="date" id="subDate" required><br><br>
+
+        <label for="subTime">Time:</label>
+        <input type="time" id="subTime" required><br><br>
+
+        <div class="form-buttons">
+          <button type="button" id="setSubscriptionButton">Set Subscription</button>
+        </div>
+      </form>
+      <p id="messageDisplay" class="hidden"></p>
+    </div>
+
+    <button id="viewSubscriptionsButton" style="margin-top: 20px; padding: 10px 20px; background-color: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      View All Subscriptions
+    </button>
+
+    <button id="deleteSubscriptionButton" style="margin-top: 20px; padding: 10px 20px; background-color: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      Delete Subscription
+    </button>
+
+    <h2>All Subscriptions</h2>
+    <table id="subscriptionsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Date</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <script>
+    let db;
+    let selectedRowId = null;
+
+    async function initDatabase() {
+      const SQL = await initSqlJs({
+        locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm`
+      });
+
+      const request = indexedDB.open("SubscriptionsDB", 1);
+      request.onupgradeneeded = event => {
+        const db = event.target.result;
+        db.createObjectStore("sqliteDB", { keyPath: "id" });
+      };
+
+      request.onsuccess = event => {
+        const idb = event.target.result;
+        const transaction = idb.transaction(["sqliteDB"], "readonly");
+        const store = transaction.objectStore("sqliteDB");
+        const getRequest = store.get(1);
+
+        getRequest.onsuccess = event => {
+          if (getRequest.result) {
+            db = new SQL.Database(getRequest.result.data);
+          } else {
+            db = new SQL.Database();
+            db.run(`CREATE TABLE IF NOT EXISTS subscriptions (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT NOT NULL,
+              date TEXT NOT NULL,
+              time TEXT NOT NULL
+            );`);
+            saveDatabase();
+          }
+        };
+      };
+    }
+
+    function saveDatabase() {
+      const data = db.export();
+      const request = indexedDB.open("SubscriptionsDB", 1);
+
+      request.onsuccess = event => {
+        const idb = event.target.result;
+        const transaction = idb.transaction(["sqliteDB"], "readwrite");
+        const store = transaction.objectStore("sqliteDB");
+        store.put({ id: 1, data });
+      };
+    }
+
+    function saveSubscription(name, date, time) {
+      db.run(`INSERT INTO subscriptions (name, date, time) VALUES (?, ?, ?);`, [name, date, time]);
+      saveDatabase();
+
+      const messageDisplay = document.getElementById('messageDisplay');
+      messageDisplay.textContent = "Your subscription added successfully!";
+      messageDisplay.classList.remove('hidden');
+
+      document.getElementById('subscriptionForm').reset();
+    }
+
+    function displaySubscriptions() {
+      const result = db.exec(`SELECT * FROM subscriptions;`);
+      const tableBody = document.querySelector("#subscriptionsTable tbody");
+      tableBody.innerHTML = "";
+
+      if (result[0]) {
+        result[0].values.forEach(row => {
+          const tr = document.createElement("tr");
+          tr.dataset.id = row[0];
+          tr.addEventListener("click", () => selectRow(tr));
+
+          row.forEach(cell => {
+            const td = document.createElement("td");
+            td.textContent = cell;
+            tr.appendChild(td);
+          });
+
+          tableBody.appendChild(tr);
+        });
+      } else {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 4;
+        td.textContent = "No subscriptions found.";
+        tr.appendChild(td);
+        tableBody.appendChild(tr);
+      }
+    }
+
+    function selectRow(row) {
+      document.querySelectorAll("#subscriptionsTable tr").forEach(tr => tr.classList.remove("selected"));
+      row.classList.add("selected");
+      selectedRowId = row.dataset.id;
+    }
+
+    function deleteSubscription() {
+      if (!selectedRowId) {
+        alert("Please select a subscription to delete.");
+        return;
+      }
+
+      db.run(`DELETE FROM subscriptions WHERE id = ?;`, [selectedRowId]);
+      saveDatabase();
+      selectedRowId = null;
+      displaySubscriptions();
+    }
+
+    document.getElementById('setSubscriptionButton').addEventListener('click', () => {
+      const name = document.getElementById('subName').value;
+      const date = document.getElementById('subDate').value;
+      const time = document.getElementById('subTime').value;
+
+      if (!name || !date || !time) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      saveSubscription(name, date, time);
+    });
+
+    document.getElementById('viewSubscriptionsButton').addEventListener('click', displaySubscriptions);
+    document.getElementById('deleteSubscriptionButton').addEventListener('click', deleteSubscription);
+
+    window.onload = initDatabase;
+  </script>
+</body>
+</html>

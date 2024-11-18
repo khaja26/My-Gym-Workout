@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Gym Schedule</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Favicon and Icons -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  
+  <!-- Meta for PWA -->
+  <meta name="theme-color" content="#4CAF50">
+  <meta name="description" content="A personal gym schedule tracker and planner.">
+</head>
+<body>
+  <header>
+    <h1>Welcome to My Gym Schedule</h1>
+    <img src="icons/gym.png" alt="Gym" class="header-image">
+  </header>
+
+  <main>
+    <!-- Floating + Button -->
+    <button id="addButton" class="floating-button">+</button> 
+
+    <!-- Display Table and YouTube Search Section -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <!-- Saved Activities Table -->
+      <div id="dataDisplay" class="data-display" style="text-align: center; flex: 1;">
+        <h2>Saved Activities</h2>
+        <table id="dataTable" style="margin: 0 auto; border: 0px solid black;">  
+          <thead>
+            <tr>
+              <th>Date</th> 
+              <th>Day</th>
+              <th>Activity</th>                
+              <th>Hours</th>                
+              <th>Minutes</th>
+            </tr> 
+          </thead>
+          <tbody>
+            <!-- Data will be appended here dynamically -->
+          </tbody>  
+        </table>
+      </div>
+
+      <!-- YouTube Search Section -->
+      <div style="text-align: center; margin-left: 20px; flex-basis: 250px;">
+        <h3>Related Videos</h3>
+        <form action="https://www.youtube.com/results" method="get" target="_blank">
+          <label for="categorySelect">Select an Exercise Category:</label>
+          <select name="search_query" id="categorySelect" required>
+            <option value="">--Select Category--</option>
+            
+            <!-- Upper Body -->
+            <optgroup label="Upper Body">
+              <option value="Bench Press">Bench Press</option>
+              <option value="Incline Bench Press">Incline Bench Press</option>
+              <option value="Dumbbell Press">Dumbbell Press</option>
+              <option value="Bent Over Rows">Bent Over Rows</option>
+              <option value="Pull-ups">Pull-ups</option>
+              <option value="Lat Pulldowns">Lat Pulldowns</option>
+              <option value="Bicep Curls">Bicep Curls</option>
+              <option value="Tricep Pushdowns">Tricep Pushdowns</option>
+              <option value="Shoulder Press">Shoulder Press</option>
+              <option value="Lateral Raises">Lateral Raises</option>
+            </optgroup>
+
+            <!-- Lower Body -->
+            <optgroup label="Lower Body">
+              <option value="Squats">Squats</option>
+              <option value="Leg Press">Leg Press</option>
+              <option value="Lunges">Lunges</option>
+              <option value="Deadlifts">Deadlifts</option>
+              <option value="Calf Raises">Calf Raises</option>
+              <option value="Leg Extensions">Leg Extensions</option>
+              <option value="Leg Curls">Leg Curls</option>
+              <option value="Glute Bridges">Glute Bridges</option>
+              <option value="Step-ups">Step-ups</option>
+              <option value="Calf Press">Calf Press</option>
+            </optgroup>
+
+            <!-- Core -->
+            <optgroup label="Core">
+              <option value="Planks">Planks</option>
+              <option value="Russian Twists">Russian Twists</option>
+              <option value="Leg Raises">Leg Raises</option>
+              <option value="Bicycle Crunches">Bicycle Crunches</option>
+              <option value="Woodchoppers">Woodchoppers</option>
+              <option value="Pallof Press">Pallof Press</option>
+              <option value="Side Plank">Side Plank</option>
+              <option value="Reverse Crunches">Reverse Crunches</option>
+              <option value="Hanging Leg Raises">Hanging Leg Raises</option>
+              <option value="Superman">Superman</option>
+            </optgroup>
+
+            <!-- Cardio -->
+            <optgroup label="Cardio">
+              <option value="Treadmill">Treadmill</option>
+              <option value="Stationary Bike">Stationary Bike</option>
+              <option value="Elliptical Trainer">Elliptical Trainer</option>
+              <option value="Rowing Machine">Rowing Machine</option>
+              <option value="Stairmaster">Stairmaster</option>
+            </optgroup>
+
+            <!-- Functional Training -->
+            <optgroup label="Functional Training">
+              <option value="Burpees">Burpees</option>
+              <option value="Box Jumps">Box Jumps</option>
+              <option value="Kettlebell Swings">Kettlebell Swings</option>
+              <option value="Battle Ropes">Battle Ropes</option>
+              <option value="Medicine Ball Throws">Medicine Ball Throws</option>
+              <option value="Jump Squats">Jump Squats</option>
+              <option value="Box Step-ups">Box Step-ups</option>
+              <option value="Resistance Band Training">Resistance Band Training</option>
+              <option value="Plyometric Exercises">Plyometric Exercises</option>
+              <option value="Agility Drills">Agility Drills</option>
+            </optgroup>
+
+          </select>       
+        <br><br>
+ <button type="submit">Search</button>  
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Bottom Navigation Menu -->
+  <nav class="bottom-nav">
+    
+  <button id="aboutButton">
+   <a href="about.html" style="text-decoration: none; color: inherit;">
+    <img src="icons/about.png" alt="About Icon">
+    <center><span>About</span></center>
+   </a>
+   </button>
+
+    </button>
+    <button id="completedButton">
+      <img src="icons/completed.png" alt="Completed Icon">
+      <span>Completed</span>
+    </button>
+    <button id="editButton">
+      <img src="icons/edit.png" alt="Edit Icon">
+      <span>Edit</span>
+    </button>    
+    <button id="shareButton">
+      <img src="icons/share.png" alt="Share Icon">
+      <span>Share</span>
+    </button>  
+    <button id="moveButton">
+      <img src="icons/move.png" alt="Move Icon">
+      <span>Move</span>
+    </button>
+    <button id="timerButton">
+   <a href="timer.html" style="text-decoration: none; color: inherit;">
+    <img src="icons/timer.png" alt="Timer Icon">
+    <center><span>Timer</span></center>
+   </a>
+  </button> 
+
+    <button id="deleteButton">
+      <img src="icons/delete.png" alt="Delete Icon">
+      <span>Delete</span>
+    </button>
+
+   <button id="subscriptionButton">
+   <a href="subscription.html" style="text-decoration: none; color: inherit;">
+    <img src="icons/subscription.png" alt="Subscription Icon">
+    <center><span>Subscription</span></center>
+   </a>
+   </button>
+
+     
+  </nav>
+
+  <!-- Popup Form -->
+  <div id="popupForm" class="popup hidden">
+    <div class="popup-content">
+      <h2>Enter Activity</h2>
+      <form id="activityForm">
+        <label for="activityDate">Date:</label>
+        <input type="date" id="activityDate" required>
+        <p id="dayDisplay"></p>
+        
+        <label for="activityText">Activity:</label>
+        <input type="text" id="activityText" placeholder="Enter activity" required>
+        
+        <label for="activityHours">Hours:</label>
+        <input type="number" id="activityHours" placeholder="Hours" min="0" max="24" required>
+        
+        <label for="activityMinutes">Minutes:</label>
+        <input type="number" id="activityMinutes" placeholder="Minutes" min="0" max="59" required>
+
+        <div class="form-buttons">
+          <button type="button" id="submitButton">Submit</button>
+          <button type="reset" id="clearButton">Clear</button>
+          <button type="button" id="cancelButton">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add New Activity Popup Form -->
+  <div id="addActivityPopup" class="popup hidden">
+    <div class="popup-content">
+      <h2>Add New Activity</h2>
+      <form id="addActivityForm">
+        <label for="addActivityDate">Date:</label>
+        <input type="date" id="addActivityDate" required>
+        <p id="addDayDisplay"></p>
+
+        <label for="addActivityText">Activity:</label>
+        <input type="text" id="addActivityText" placeholder="Enter activity" required>
+
+        <label for="addActivityHours">Hours:</label>
+        <input type="number" id="addActivityHours" placeholder="Hours" min="0" max="24" required>
+
+        <label for="addActivityMinutes">Minutes:</label>
+        <input type="number" id="addActivityMinutes" placeholder="Minutes" min="0" max="59" required>
+
+        <div class="form-buttons">
+          <button type="button" id="addSubmitButton">Add</button>
+          <button type="reset" id="addClearButton">Clear</button>
+          <button type="button" id="addCancelButton">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Activity Popup Form -->
+  <div id="editActivityPopup" class="popup hidden">
+    <div class="popup-content">
+      <h2>Edit Activity</h2>
+      <form id="editActivityForm">
+        <label for="editActivityDate">Date:</label>
+        <input type="date" id="editActivityDate" required>
+        <p id="editDayDisplay"></p>
+
+        <label for="editActivityText">Activity:</label>
+        <input type="text" id="editActivityText" placeholder="Enter activity" required>
+
+        <label for="editActivityHours">Hours:</label>
+        <input type="number" id="editActivityHours" placeholder="Hours" min="0" max="24" required>
+
+        <label for="editActivityMinutes">Minutes:</label>
+        <input type="number" id="editActivityMinutes" placeholder="Minutes" min="0" max="59" required>
+
+        <div class="form-buttons">
+          <button type="button" id="editSubmitButton">Update</button>
+          <button type="button" id="editCancelButton">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Filter and Timer Sections -->
+  <!-- Existing code unchanged -->
+
+  <script src="script.js"></script>
+  <script>
+    // Register the service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('serviceworker.js').then(function(registration) {
+        console.log('ServiceWorker registered with scope:', registration.scope);
+      }).catch(function(error) {
+        console.log('ServiceWorker registration failed:', error);
+      });
+    }
+  </script>
+ 
+</body>
+</html>
