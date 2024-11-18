@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PWA: Show Data by Date Range</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+
+    header {
+      text-align: center;
+      background-color: #4CAF50;
+      color: white;
+      padding: 1em 0;
+    }
+
+    main {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .popup {
+      display: block;
+      padding: 20px;
+      background-color: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin: 20px auto;
+      max-width: 400px;
+      border-radius: 5px;
+    }
+
+    .form-buttons button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .form-buttons button:hover {
+      background-color: #45a049;
+    }
+
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 80%;
+      text-align: left;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Show Data by Date Range</h1>
+  </header>
+
+  <main>
+    <!-- Date Range Form Popup -->
+    <div id="dateRangePopup" class="popup">
+      <h2>Select Date Range</h2>
+      <form id="dateRangeForm">
+        <label for="fromDate">From Date:</label>
+        <input type="date" id="fromDate" required>
+        <br><br>
+        <label for="toDate">To Date:</label>
+        <input type="date" id="toDate" required>
+        <br><br>
+        <div class="form-buttons">
+          <button type="button" id="showDataButton">Show Data</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Results Table -->
+    <h2>Results</h2>
+    <table id="resultsTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Day</th>
+          <th>Activity</th>
+          <th>Hours</th>
+          <th>Minutes</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <script>
+    let db;
+
+    async function initDatabase() {
+      const SQL = await initSqlJs({
+        locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm`
+      });
+
+      // Open IndexedDB to store SQLite database
+      const request = indexedDB.open("PWA-DB", 1);
+      request.onupgradeneeded = event => {
+        const idb = event.target.result;
+        idb.createObjectStore("sqliteDB", { keyPath: "id" });
+      };
+
+      request.onsuccess = async event => {
+        const idb = event.target.result;
+        const transaction = idb.transaction(["sqliteDB"], "readonly");
+        const store = transaction.objectStore("sqliteDB");
+        const getRequest = store.get(1);
+
+        getRequest.onsuccess = async event => {
+          if (getRequest.result) {
+            // Load the existing database from IndexedDB
+            db = new SQL.Database(getRequest.result.data);
+          } else {
+            // Initialize a new database if it doesn't exist
+            db = new SQL.Database();
+            const createTableQuery = `
+              CREATE TABLE IF NOT EXISTS gtb (
+                date TEXT NOT NULL,
+                day TEXT NOT NULL,
+                activity TEXT NOT NULL,
+                hours INTEGER NOT NULL,
+                minutes INTEGER NOT NULL
+              );
+            `;
+            db.run(createTableQuery);
+
+            console.log("Database initialized with gtb table.");
+          }
+        };
+      };
+    }
+
+    function fetchData(fromDate, toDate) {
+      const query = `SELECT date, day, activity, hours, minutes FROM gtb WHERE date BETWEEN ? AND ? ORDER BY date;`;
+      const result = db.exec(query, [fromDate, toDate]);
+
+      const tableBody = document.querySelector("#resultsTable tbody");
+      tableBody.innerHTML = "";
+
+      if (result[0]) {
+        result[0].values.forEach(row => {
+          const tr = document.createElement("tr");
+          row.forEach(cell => {
+            const td = document.createElement("td");
+            td.textContent = cell;
+            tr.appendChild(td);
+          });
+          tableBody.appendChild(tr);
+        });
+      } else {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 5;
+        td.textContent = "No data found for the selected range.";
+        tr.appendChild(td);
+        tableBody.appendChild(tr);
+      }
+    }
+
+    // Fetch data when "Show Data" button is clicked
+    document.getElementById('showDataButton').addEventListener('click', () => {
+      const fromDate = document.getElementById('fromDate').value;
+      const toDate = document.getElementById('toDate').value;
+
+      if (!fromDate || !toDate) {
+        alert("Please select both From Date and To Date.");
+        return;
+      }
+
+      fetchData(fromDate, toDate);
+    });
+
+    window.onload = initDatabase;
+  </script>
+</body>
+</html>

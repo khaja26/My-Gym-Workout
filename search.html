@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Feature</title>
+  <style>
+    /* Basic styling for the search section */
+    #searchSection {
+      margin: 20px;
+    }
+
+    #searchText {
+      padding: 8px;
+      width: 200px;
+    }
+
+    #searchButton {
+      padding: 8px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    #searchButton:hover {
+      background-color: #0056b3;
+    }
+
+    #searchResults {
+      margin-top: 20px;
+    }
+
+    .result {
+      background-color: #f9f9f9;
+      padding: 10px;
+      margin: 5px 0;
+      border: 1px solid #ddd;
+    }
+
+    /* Centering content on the page */
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+
+    #searchContainer {
+      text-align: center;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="searchContainer">
+    <!-- Search Section -->
+    <div id="searchSection">
+      <label for="searchText">Enter Text to Search:</label>
+      <input type="text" id="searchText" placeholder="Type here...">
+      <button id="searchButton">Search</button>
+    </div>
+
+    <!-- Display Search Results -->
+    <div id="searchResults">
+      <h3>Search Results</h3>
+      <div id="resultsContainer">
+        <!-- Results will be inserted here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchButton = document.getElementById('searchButton');
+      const searchText = document.getElementById('searchText');
+      const resultsContainer = document.getElementById('resultsContainer');
+
+      // When search button is clicked
+      searchButton.addEventListener('click', () => {
+        const query = searchText.value.trim();
+
+        // Check if user entered text
+        if (!query) {
+          alert('Please enter a search term.');
+          return;
+        }
+
+        // Show loading text while waiting for the response
+        resultsContainer.innerHTML = 'Searching...';
+
+        // Example API call (replace with your desired API URL)
+        const apiUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(query)}`;
+
+        // Fetch data from the API
+        fetch(apiUrl)
+          .then(response => response.json())
+          .then(data => {
+            // Clear the loading text
+            resultsContainer.innerHTML = '';
+
+            // Check if the response has results
+            if (data && data.query && data.query.search && data.query.search.length > 0) {
+              // Loop through the results and display them
+              data.query.search.forEach(result => {
+                const resultDiv = document.createElement('div');
+                resultDiv.classList.add('result');
+                resultDiv.innerHTML = `
+                  <strong>${result.title}</strong><br>
+                  ${result.snippet}...
+                `;
+                resultsContainer.appendChild(resultDiv);
+              });
+            } else {
+              resultsContainer.innerHTML = 'No results found.';
+            }
+          })
+          .catch(error => {
+            // Handle errors, like no internet connection
+            resultsContainer.innerHTML = 'Error fetching data. Please try again later.';
+            console.error(error);
+          });
+      });
+    });
+  </script>
+
+</body>
+</html>

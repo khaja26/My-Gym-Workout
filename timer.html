@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settable Timer with Alarm</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f5f7fa;
+      margin: 0;
+    }
+
+    #timerDisplay {
+      font-size: 4rem;
+      font-weight: bold;
+      color: #fff;
+      background: linear-gradient(45deg, #4caf50, #2196f3);
+      border-radius: 15px;
+      padding: 15px 30px;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
+      box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+      margin-bottom: 20px;
+    }
+
+    #controls, #inputFields {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 15px;
+      font-size: 1rem;
+      background-color: #4caf50;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #2196f3;
+    }
+
+    input {
+      width: 60px;
+      padding: 5px;
+      font-size: 1rem;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <center><h1>Gym Timer</h1></center>
+  <div id="timerDisplay">00:00:00</div>
+
+  <div id="inputFields">
+    <input type="number" id="hours" placeholder="HH" min="0">
+    <input type="number" id="minutes" placeholder="MM" min="0" max="59">
+    <input type="number" id="seconds" placeholder="SS" min="0" max="59">
+  </div>
+
+  <div id="controls">
+    <button onclick="startTimer()">Start</button>
+    <button onclick="pauseTimer()">Pause</button>
+    <button onclick="deleteTimer()">Delete</button>
+  </div>
+
+  <!-- Audio for alarm -->
+  <audio id="alarmSound" src="alarm.mp3" preload="auto"></audio>
+
+  <script>
+    // Timer variables
+    let timer;
+    let remainingTime = 0;
+    let isRunning = false;
+
+    // Update the timer display
+    function updateDisplay() {
+      const hours = Math.floor(remainingTime / 3600);
+      const minutes = Math.floor((remainingTime % 3600) / 60);
+      const seconds = remainingTime % 60;
+
+      document.getElementById('timerDisplay').textContent =
+        `${hours < 10 ? '0' : ''}${hours}:` +
+        `${minutes < 10 ? '0' : ''}${minutes}:` +
+        `${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    // Play alarm sound
+    function playAlarm() {
+      const alarmSound = document.getElementById('alarmSound');
+      alarmSound.play();
+    }
+
+    // Start the timer
+    function startTimer() {
+      if (isRunning) return;
+
+      // Get the user-set time if not already started
+      if (remainingTime === 0) {
+        const hours = parseInt(document.getElementById('hours').value) || 0;
+        const minutes = parseInt(document.getElementById('minutes').value) || 0;
+        const seconds = parseInt(document.getElementById('seconds').value) || 0;
+
+        remainingTime = hours * 3600 + minutes * 60 + seconds;
+        if (remainingTime <= 0) {
+          alert('Please set a valid time.');
+          return;
+        }
+      }
+
+      isRunning = true;
+      timer = setInterval(() => {
+        if (remainingTime > 0) {
+          remainingTime--;
+          updateDisplay();
+        } else {
+          clearInterval(timer);
+          isRunning = false;
+          updateDisplay();
+          playAlarm(); // Play alarm when timer reaches zero
+        }
+      }, 1000);
+    }
+
+    // Pause the timer
+    function pauseTimer() {
+      clearInterval(timer);
+      isRunning = false;
+    }
+
+    // Delete the timer
+    function deleteTimer() {
+      clearInterval(timer);
+      isRunning = false;
+      remainingTime = 0;
+      updateDisplay();
+
+      // Reset input fields
+      document.getElementById('hours').value = '';
+      document.getElementById('minutes').value = '';
+      document.getElementById('seconds').value = '';
+    }
+
+    // Initialize display
+    updateDisplay();
+  </script>
+</body>
+</html>
