@@ -197,6 +197,37 @@ document.getElementById("deleteButton").addEventListener("click", () => {
   }
 });
 
+// Handle Share Button Click
+document.getElementById("shareButton").addEventListener("click", async () => {
+  if (!selectedRowData) {
+    alert("Please select a row to share.");
+    return;
+  }
+
+  const [, date, day, activity, hours, minutes] = selectedRowData;
+  const shareContent = `
+    Activity Details:
+    Date: ${date}
+    Day: ${day}
+    Activity: ${activity}
+    Duration: ${hours} Hours ${minutes} Minutes
+  `;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: "Shared Activity Details",
+        text: shareContent,
+      });
+      console.log("Activity shared successfully!");
+    } catch (error) {
+      console.error("Error sharing activity:", error);
+    }
+  } else {
+    alert("Sorry, your browser does not support the Web Share API.");
+  }
+});
+
 // Event Listeners for Date Input Changes
 document.querySelectorAll('[id$="ActivityDate"]').forEach(input => {
   input.addEventListener("change", (event) => {
@@ -215,5 +246,3 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("addCancelButton").addEventListener("click", () => hidePopup("addActivityPopup"));
   document.getElementById("editCancelButton").addEventListener("click", () => hidePopup("editActivityPopup"));
 });
-
- 
