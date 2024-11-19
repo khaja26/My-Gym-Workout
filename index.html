@@ -210,31 +210,30 @@
   </div>
 
   <!-- Add New Activity Popup Form -->
-  <div id="addActivityPopup" class="popup hidden">
-    <div class="popup-content">
-      <h2>Add New Activity</h2>
-      <form id="addActivityForm">
-        <label for="addActivityDate">Date:</label>
-        <input type="date" id="addActivityDate" required>
-        <p id="addDayDisplay"></p>
+<div id="addActivityPopup" class="popup hidden">
+  <div class="popup-content">
+    <h2>Add New Activity</h2>
+    <form id="addActivityForm">
+      <label for="addActivityDate">Date:</label>
+      <input type="date" id="addActivityDate" required>
+      
+      <label for="addActivityText">Activity:</label>
+      <input type="text" id="addActivityText" placeholder="Enter activity" required>
 
-        <label for="addActivityText">Activity:</label>
-        <input type="text" id="addActivityText" placeholder="Enter activity" required>
+      <label for="addActivityHours">Hours:</label>
+      <input type="number" id="addActivityHours" placeholder="Hours" min="0" max="24" required>
 
-        <label for="addActivityHours">Hours:</label>
-        <input type="number" id="addActivityHours" placeholder="Hours" min="0" max="24" required>
+      <label for="addActivityMinutes">Minutes:</label>
+      <input type="number" id="addActivityMinutes" placeholder="Minutes" min="0" max="59" required>
 
-        <label for="addActivityMinutes">Minutes:</label>
-        <input type="number" id="addActivityMinutes" placeholder="Minutes" min="0" max="59" required>
-
-        <div class="form-buttons">
-          <button type="button" id="addSubmitButton">Add</button>
-          <button type="reset" id="addClearButton">Clear</button>
-          <button type="button" id="addCancelButton">Cancel</button>
-        </div>
-      </form>
-    </div>
+      <div class="form-buttons">
+        <button type="button" id="addSubmitButton">Add</button>
+        <button type="button" id="addCancelButton">Cancel</button>
+      </div>
+    </form>
   </div>
+</div>
+
 
   <!-- Edit Activity Popup Form -->
   <div id="editActivityPopup" class="popup hidden">
