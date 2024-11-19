@@ -197,6 +197,26 @@ document.getElementById("deleteButton").addEventListener("click", () => {
   }
 });
 
+// Handle Move Button Click
+document.getElementById("moveButton").addEventListener("click", () => {
+  if (!selectedRowData) {
+    alert("Please select a row to move.");
+    return;
+  }
+
+  const [, date, day, activity, hours, minutes] = selectedRowData;
+
+  // Calculate new date by adding 7 days
+  const oldDate = new Date(date);
+  const newDate = new Date(oldDate.setDate(oldDate.getDate() + 7));
+  const newDateString = newDate.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+  const newDay = newDate.toLocaleDateString("en-US", { weekday: "long" });
+
+  // Save as new record
+  saveData({ date: newDateString, day: newDay, activity, hours, minutes });
+  alert("Activity moved successfully!");
+});
+
 // Handle Share Button Click
 document.getElementById("shareButton").addEventListener("click", async () => {
   if (!selectedRowData) {
