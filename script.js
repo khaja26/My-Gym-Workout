@@ -216,16 +216,4 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("editCancelButton").addEventListener("click", () => hidePopup("editActivityPopup"));
 });
 
-function shareActivity(activityText) {
-    if (navigator.share) {
-        navigator.share({
-            title: 'My Daily Activity',
-            text: `Check out this activity: ${activityText}`,
-            url: window.location.href // URL of the current page
-        })
-        .then(() => console.log('Share was successful.'))
-        .catch((error) => console.log('Sharing failed:', error));
-    } else {
-        alert('Sharing is not supported in this browser.');
-    }
-}
+ 
