@@ -17,7 +17,8 @@
   
   <!-- Meta for PWA -->
   <meta name="theme-color" content="#4CAF50">
-  <meta name="description" content="A personal gym schedule tracker and planner.">
+<script>navigator.serviceWorker.register("service-worker.js")</script> 
+<link rel="manifest" href="manifest.json" />  <meta name="description" content="A personal gym schedule tracker and planner.">
 </head>
 <body>
   <header>
@@ -265,16 +266,7 @@
   <!-- Existing code unchanged -->
 
   <script src="script.js"></script>
-  <script>
-    // Register the service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('serviceworker.js').then(function(registration) {
-        console.log('ServiceWorker registered with scope:', registration.scope);
-      }).catch(function(error) {
-        console.log('ServiceWorker registration failed:', error);
-      });
-    }
-  </script>
+  
  
 </body>
 </html>
