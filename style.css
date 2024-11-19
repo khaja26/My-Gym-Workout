@@ -393,6 +393,24 @@ body {
 #shareButton:hover {
   background-color: #0056b3;
 }
+header {
+  width: 100%;
+  background-color: #4CAF50; /* Adjust the color as needed */
+  text-align: center;
+  padding: 10px 0;
+  box-sizing: border-box;
+}
+
+header h1 {
+  margin: 0;
+  color: white;
+}
+
+header img {
+  vertical-align: middle;
+  height: 50px; /* Adjust height if needed */
+  margin-left: 10px;
+}
 
 
 
