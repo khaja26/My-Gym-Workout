@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles.css">
   
   <!-- PWA Manifest -->
-  <!--<link rel="manifest" href="manifest.json">-->
+  <link rel="manifest" href="manifest.json">
   
   <!-- Favicon and Icons -->
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
@@ -17,8 +17,7 @@
   
   <!-- Meta for PWA -->
   <meta name="theme-color" content="#4CAF50">
-<script>navigator.serviceWorker.register("service-worker.js")</script> 
-<link rel="manifest" href="manifest.json" />  <meta name="description" content="A personal gym schedule tracker and planner.">
+  <meta name="description" content="A personal gym schedule tracker and planner.">
 </head>
 <body>
   <header>
@@ -210,30 +209,31 @@
   </div>
 
   <!-- Add New Activity Popup Form -->
-<div id="addActivityPopup" class="popup hidden">
-  <div class="popup-content">
-    <h2>Add New Activity</h2>
-    <form id="addActivityForm">
-      <label for="addActivityDate">Date:</label>
-      <input type="date" id="addActivityDate" required>
-      
-      <label for="addActivityText">Activity:</label>
-      <input type="text" id="addActivityText" placeholder="Enter activity" required>
+  <div id="addActivityPopup" class="popup hidden">
+    <div class="popup-content">
+      <h2>Add New Activity</h2>
+      <form id="addActivityForm">
+        <label for="addActivityDate">Date:</label>
+        <input type="date" id="addActivityDate" required>
+        <p id="addDayDisplay"></p>
 
-      <label for="addActivityHours">Hours:</label>
-      <input type="number" id="addActivityHours" placeholder="Hours" min="0" max="24" required>
+        <label for="addActivityText">Activity:</label>
+        <input type="text" id="addActivityText" placeholder="Enter activity" required>
 
-      <label for="addActivityMinutes">Minutes:</label>
-      <input type="number" id="addActivityMinutes" placeholder="Minutes" min="0" max="59" required>
+        <label for="addActivityHours">Hours:</label>
+        <input type="number" id="addActivityHours" placeholder="Hours" min="0" max="24" required>
 
-      <div class="form-buttons">
-        <button type="button" id="addSubmitButton">Add</button>
-        <button type="button" id="addCancelButton">Cancel</button>
-      </div>
-    </form>
+        <label for="addActivityMinutes">Minutes:</label>
+        <input type="number" id="addActivityMinutes" placeholder="Minutes" min="0" max="59" required>
+
+        <div class="form-buttons">
+          <button type="button" id="addSubmitButton">Add</button>
+          <button type="reset" id="addClearButton">Clear</button>
+          <button type="button" id="addCancelButton">Cancel</button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
-
 
   <!-- Edit Activity Popup Form -->
   <div id="editActivityPopup" class="popup hidden">
@@ -261,10 +261,20 @@
     </div>
   </div>
 
-   
+  <!-- Filter and Timer Sections -->
+  <!-- Existing code unchanged -->
 
   <script src="script.js"></script>
-  
+  <script>
+    // Register the service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('serviceworker.js').then(function(registration) {
+        console.log('ServiceWorker registered with scope:', registration.scope);
+      }).catch(function(error) {
+        console.log('ServiceWorker registration failed:', error);
+      });
+    }
+  </script>
  
 </body>
 </html>
