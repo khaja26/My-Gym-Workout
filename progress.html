@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background-color: #f3f7fa;
+            color: #333;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #5b9bd5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #4178a9;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            text-align: left;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .modal-content label {
+            display: block;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .modal-content input, .modal-content textarea {
+            width: calc(100% - 20px);
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background-color: #5b9bd5;
+            color: white;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        #deleteDataBtn {
+            background-color: #d9534f;
+        }
+        #deleteDataBtn:hover {
+            background-color: #b52b27;
+        }
+        #dataTableContainer {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Progress Tracker</h1>
+        <button id="addDataBtn">Add Data</button>
+        <button id="viewDataBtn">View All Data</button>
+        <button id="deleteDataBtn">Delete Selected</button>
+    </div>
+
+    <!-- Modal for Data Entry -->
+    <div id="dataEntryModal" class="modal">
+        <div class="modal-content">
+            <h2>Data Entry Form</h2>
+            <form id="ProgressEntryForm">
+                <label>Date and Time:</label>
+                <input type="text" id="datetime" readonly>
+                <label>Weight (kg):</label>
+                <input type="number" id="weight" step="0.1" placeholder="Enter weight">
+                <label>Body FAT %:</label>
+                <input type="number" id="bodyFat" step="0.1" placeholder="Enter body fat percentage">
+                <label>Waist (cm):</label>
+                <input type="number" id="waist" step="0.1" placeholder="Enter waist size">
+                <label>Chest (cm):</label>
+                <input type="number" id="chest" step="0.1" placeholder="Enter chest size">
+                <label>Arms (cm):</label>
+                <input type="number" id="arms" step="0.1" placeholder="Enter arm size">
+                <label>Any Other Notes:</label>
+                <textarea id="other" placeholder="Additional notes"></textarea>
+                <button type="button" id="submitBtn">Submit</button>
+                <button type="button" id="clearBtn">Clear</button>
+                <button type="button" id="cancelBtn">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div id="dataTableContainer">
+        <h2>Saved Data</h2>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Date & Time</th>
+                    <th>Weight</th>
+                    <th>Body FAT %</th>
+                    <th>Waist</th>
+                    <th>Chest</th>
+                    <th>Arms</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be dynamically populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let db;
+
+        // Open or create the IndexedDB database
+        function initDB() {
+            const request = indexedDB.open("ProgressTrackerDB", 1);
+            request.onupgradeneeded = function(event) {
+                db = event.target.result;
+                if (!db.objectStoreNames.contains("progress")) {
+                    db.createObjectStore("progress", { keyPath: "id", autoIncrement: true });
+                }
+            };
+            request.onsuccess = function(event) {
+                db = event.target.result;
+            };
+        }
+
+        // Save data to IndexedDB
+        function saveData(data) {
+            const transaction = db.transaction(["progress"], "readwrite");
+            const objectStore = transaction.objectStore("progress");
+            objectStore.add(data);
+            alert("Data saved successfully!");
+        }
+
+        // Fetch all data from IndexedDB
+        function fetchData(callback) {
+            const transaction = db.transaction(["progress"], "readonly");
+            const objectStore = transaction.objectStore("progress");
+            const request = objectStore.getAll();
+            request.onsuccess = function() {
+                callback(request.result);
+            };
+        }
+
+        // Delete selected rows
+        function deleteSelectedRows() {
+            const transaction = db.transaction(["progress"], "readwrite");
+            const objectStore = transaction.objectStore("progress");
+
+            const checkboxes = document.querySelectorAll(".select-row:checked");
+            checkboxes.forEach(checkbox => {
+                const id = Number(checkbox.value);
+                objectStore.delete(id);
+            });
+
+            alert("Selected rows deleted!");
+            displayData();
+        }
+
+        // Display data in the table
+        function displayData() {
+            const dataTableBody = document.querySelector("#dataTable tbody");
+            const dataTableContainer = document.getElementById("dataTableContainer");
+
+            fetchData(function(data) {
+                dataTableBody.innerHTML = "";
+                data.forEach(row => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><input type="checkbox" class="select-row" value="${row.id}"></td>
+                        <td>${row.datetime}</td>
+                        <td>${row.weight}</td>
+                        <td>${row.bodyFat}</td>
+                        <td>${row.waist}</td>
+                        <td>${row.chest}</td>
+                        <td>${row.arms}</td>
+                        <td>${row.other}</td>
+                    `;
+                    dataTableBody.appendChild(tr);
+                });
+                dataTableContainer.style.display = data.length ? "block" : "none";
+            });
+        }
+
+        // Initialize modal and buttons
+        function initApp() {
+            initDB();
+
+            const modal = document.getElementById("dataEntryModal");
+            const addDataBtn = document.getElementById("addDataBtn");
+            const cancelBtn = document.getElementById("cancelBtn");
+            const clearBtn = document.getElementById("clearBtn");
+            const submitBtn = document.getElementById("submitBtn");
+            const viewDataBtn = document.getElementById("viewDataBtn");
+            const deleteDataBtn = document.getElementById("deleteDataBtn");
+
+            addDataBtn.addEventListener("click", () => {
+                document.getElementById("datetime").value = new Date().toISOString().slice(0, 19).replace("T", " ");
+                modal.style.display = "flex";
+            });
+
+            cancelBtn.addEventListener("click", () => modal.style.display = "none");
+            clearBtn.addEventListener("click", () => document.getElementById("ProgressEntryForm").reset());
+
+            submitBtn.addEventListener("click", () => {
+                const data = {
+                    datetime: document.getElementById("datetime").value,
+                    weight: document.getElementById("weight").value,
+                    bodyFat: document.getElementById("bodyFat").value,
+                    waist: document.getElementById("waist").value,
+                    chest: document.getElementById("chest").value,
+                    arms: document.getElementById("arms").value,
+                    other: document.getElementById("other").value
+                };
+                saveData(data);
+                modal.style.display = "none";
+            });
+
+            viewDataBtn.addEventListener("click", displayData);
+            deleteDataBtn.addEventListener("click", deleteSelectedRows);
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
